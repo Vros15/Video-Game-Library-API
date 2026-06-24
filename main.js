@@ -21,9 +21,25 @@ ROOT ROUTE
 ====================================
 */
 app.get("/", (req, res) => {
-  res.json({
-    message: "Video Game API Running",
-  });
+  res.send(`
+    <h1>Video Game API</h1>
+
+    <h2>Games</h2>
+    <ul>
+      <li><a href="/api/games">GET All Games</a></li>
+      <li><a href="/api/games?platform=PC">Filter by Platform</a></li>
+      <li><a href="/api/games?genre=Action">Filter by Genre</a></li>
+      <li><a href="/api/games?year=2023">Filter by Year</a></li>
+      <li><a href="/api/games?sortBy=releaseYear&order=desc">Sort by Release Year Descending</a></li>
+    </ul>
+
+    <h2>Platforms</h2>
+    <ul>
+      <li><a href="/api/platforms">GET All Platforms</a></li>
+    </ul>
+
+    <p>Use Postman or Insomnia for POST, PUT, and DELETE requests.</p>
+  `);
 });
 
 /*
