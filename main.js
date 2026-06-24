@@ -1,17 +1,41 @@
-// Import required modules
+// Import required packages
+// express -> creates our API server
+// lodash -> utility library (used for sorting)
+// morgan -> logs requests to the terminal
+// uuid -> generates unique IDs
 const express = require("express");
 const _ = require("lodash");
 const morgan = require("morgan");
 const uuid = require("uuid");
 
-// Create Express application
+// Create Express application instance
 const app = express();
 
-// Middleware
+/*
+====================================
+MIDDLEWARE
+====================================
+Middleware runs before routes.
+
+morgan("dev")
+- Logs incoming requests
+- Example:
+  GET /api/games 200 5ms
+
+express.json()
+- Allows Express to read JSON
+  data sent in POST/PUT requests
+*/
 app.use(morgan("dev"));
 app.use(express.json());
 
-// Import data
+/*
+====================================
+IMPORT DATA
+====================================
+Load local data arrays from files.
+These act as our temporary database.
+*/
 const games = require("./data/games");
 const platforms = require("./data/platforms");
 
@@ -19,6 +43,8 @@ const platforms = require("./data/platforms");
 ====================================
 ROOT ROUTE
 ====================================
+Landing page for the API - HTML Format
+
 */
 app.get("/", (req, res) => {
   res.send(`
@@ -45,21 +71,28 @@ app.get("/", (req, res) => {
 /*
 ====================================
 GET ALL GAMES
-Supports:
-?platform=PC
-?genre=Action
-?year=2025
-?sortBy=name
-?sortBy=releaseYear
-?order=asc
-?order=desc
 ====================================
+Ex.
+GET /api/games?platform=PC
+GET /api/games?genre=Action
+GET /api/games?year=2023
 */
+
 app.get("/api/games", (req, res) => {
   try {
+
+    // Create a copy so we don't modify
+    // the original games array
     let results = [...games];
 
-    // Filter by platform
+    /*
+    ==========================
+    FILTERING
+    ==========================
+    */
+
+    // Keep only games that contain
+    // the requested platform
     if (req.query.platform) {
       results = results.filter((game) =>
         game.platforms.some(
@@ -70,7 +103,8 @@ app.get("/api/games", (req, res) => {
       );
     }
 
-    // Filter by genre
+    // Keep only games that contain
+    // the requested genre
     if (req.query.genre) {
       results = results.filter((game) =>
         game.genres.some(
@@ -81,7 +115,7 @@ app.get("/api/games", (req, res) => {
       );
     }
 
-    // Filter by release year
+    // Keep only games from a specific year
     if (req.query.year) {
       results = results.filter(
         (game) =>
@@ -89,42 +123,50 @@ app.get("/api/games", (req, res) => {
       );
     }
 
-    // Valid sorting fields
+    /*
+    ==========================
+    SORTING
+    ==========================
+    */
+
+    // Allowed fields users can sort by
     const validSortFields = [
       "name",
       "releaseYear",
     ];
 
+    // Default sorting values
     const sortBy = req.query.sortBy || "name";
     const order = req.query.order || "asc";
 
+    // Validate sort field
     if (!validSortFields.includes(sortBy)) {
       return res.status(400).json({
-        message: `Invalid sortBy value. Use: ${validSortFields.join(
-          ", "
-        )}`,
+        message: `Invalid sortBy value. Use: ${validSortFields.join(", ")}`
       });
     }
 
-    if (
-      !["asc", "desc"].includes(
-        order.toLowerCase()
-      )
-    ) {
+    // Validate sort order
+    if (!["asc", "desc"].includes(order.toLowerCase())) {
       return res.status(400).json({
-        message:
-          "Order must be either 'asc' or 'desc'",
+        message: "Order must be either 'asc' or 'desc'",
       });
     }
 
+    // Sort ascending using lodash
     results = _.sortBy(results, sortBy);
 
+    // Reverse array for descending order
     if (order.toLowerCase() === "desc") {
       results.reverse();
     }
 
+    // Return final filtered/sorted results
     res.json(results);
+
   } catch (error) {
+
+    // Catch unexpected server errors
     res.status(500).json({
       message: "Server Error",
       error: error.message,
@@ -136,14 +178,20 @@ app.get("/api/games", (req, res) => {
 ====================================
 GET GAME BY ID
 ====================================
+
+Returns a single game based on
+its unique ID.
 */
 app.get("/api/games/:id", (req, res) => {
   try {
+
+    // Search for matching game
     const game = games.find(
       (foundGame) =>
         foundGame.id === req.params.id
     );
 
+    // Return 404 if not found
     if (!game) {
       return res.status(404).json({
         message: "Game not found",
@@ -151,6 +199,7 @@ app.get("/api/games/:id", (req, res) => {
     }
 
     res.json(game);
+
   } catch (error) {
     res.status(500).json({
       message: error.message,
@@ -162,9 +211,16 @@ app.get("/api/games/:id", (req, res) => {
 ====================================
 CREATE NEW GAME
 ====================================
+
+POST /api/games
+
+Creates a new game object and
+adds it to the games array.
 */
 app.post("/api/games", (req, res) => {
   try {
+
+    // Pull values from request body
     const {
       name,
       releaseYear,
@@ -172,7 +228,7 @@ app.post("/api/games", (req, res) => {
       platforms,
     } = req.body;
 
-    // Validation
+    // Basic validation
     if (
       !name ||
       !releaseYear ||
@@ -185,20 +241,23 @@ app.post("/api/games", (req, res) => {
       });
     }
 
+    // Build new game object
     const newGame = {
-      id: uuid.v4(),
+      id: uuid.v4(), // generate unique ID
       name,
       releaseYear,
       genres,
       platforms,
     };
 
+    // Save into array
     games.push(newGame);
 
     res.status(201).json({
       message: "Game created successfully",
       payload: newGame,
     });
+
   } catch (error) {
     res.status(500).json({
       message: error.message,
@@ -210,9 +269,15 @@ app.post("/api/games", (req, res) => {
 ====================================
 UPDATE GAME
 ====================================
+
+PUT /api/games/:id
+
+Updates only the fields provided.
+Leaves everything else unchanged.
 */
 app.put("/api/games/:id", (req, res) => {
   try {
+
     const game = games.find(
       (foundGame) =>
         foundGame.id === req.params.id
@@ -224,6 +289,8 @@ app.put("/api/games/:id", (req, res) => {
       });
     }
 
+    // Use incoming value if supplied,
+    // otherwise keep existing value
     const updatedGame = {
       name:
         req.body.name !== undefined
@@ -246,12 +313,14 @@ app.put("/api/games/:id", (req, res) => {
           : game.platforms,
     };
 
+    // Copy updated values onto original object
     Object.assign(game, updatedGame);
 
     res.json({
       message: "Game updated successfully",
       payload: game,
     });
+
   } catch (error) {
     res.status(500).json({
       message: error.message,
@@ -263,9 +332,14 @@ app.put("/api/games/:id", (req, res) => {
 ====================================
 DELETE GAME
 ====================================
+
+Removes a game from the array
+using its ID.
 */
 app.delete("/api/games/:id", (req, res) => {
   try {
+
+    // Find index of matching game
     const gameIndex = games.findIndex(
       (foundGame) =>
         foundGame.id === req.params.id
@@ -277,6 +351,7 @@ app.delete("/api/games/:id", (req, res) => {
       });
     }
 
+    // Remove one item from array
     const deletedGame = games.splice(
       gameIndex,
       1
@@ -286,6 +361,7 @@ app.delete("/api/games/:id", (req, res) => {
       message: "Game deleted successfully",
       payload: deletedGame[0],
     });
+
   } catch (error) {
     res.status(500).json({
       message: error.message,
@@ -296,13 +372,14 @@ app.delete("/api/games/:id", (req, res) => {
 /*
 ====================================
 GET ALL PLATFORMS
-Supports:
-?sortBy=name
-?sortBy=releaseYear
 ====================================
+
+Returns all platforms.
+Optional sorting supported.
 */
 app.get("/api/platforms", (req, res) => {
   try {
+
     const validSortFields = [
       "name",
       "releaseYear",
@@ -311,20 +388,21 @@ app.get("/api/platforms", (req, res) => {
     const sortBy =
       req.query.sortBy || "name";
 
+    // Validate requested sort field
     if (!validSortFields.includes(sortBy)) {
       return res.status(400).json({
-        message: `Invalid sortBy value. Use: ${validSortFields.join(
-          ", "
-        )}`,
+        message: `Invalid sortBy value. Use: ${validSortFields.join(", ")}`
       });
     }
 
+    // Sort platform array
     const sortedPlatforms = _.sortBy(
       platforms,
       sortBy
     );
 
     res.json(sortedPlatforms);
+
   } catch (error) {
     res.status(500).json({
       message: error.message,
@@ -336,9 +414,12 @@ app.get("/api/platforms", (req, res) => {
 ====================================
 GET PLATFORM BY ID
 ====================================
+
+Returns one platform object.
 */
 app.get("/api/platforms/:id", (req, res) => {
   try {
+
     const platform = platforms.find(
       (foundPlatform) =>
         String(foundPlatform.id) ===
@@ -352,6 +433,7 @@ app.get("/api/platforms/:id", (req, res) => {
     }
 
     res.json(platform);
+
   } catch (error) {
     res.status(500).json({
       message: error.message,
@@ -363,6 +445,9 @@ app.get("/api/platforms/:id", (req, res) => {
 ====================================
 START SERVER
 ====================================
+
+Use environment port if deployed.
+Otherwise run locally on port 3000.
 */
 const port = process.env.PORT || 3000;
 
