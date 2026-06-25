@@ -195,12 +195,5 @@ GET /api/v1/games?sortBy=name&order=asc
 * Swagger/OpenAPI documentation
 * Authentication and authorization
 
----
-
-# 👨‍💻 Author
-
-**Victor Rosario**
-
-Computer Science graduate and Software Engineering student passionate about backend development, REST APIs, and building scalable applications with JavaScript and Node.js.
 
 Feel free to connect or provide feedback!
