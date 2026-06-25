@@ -1,71 +1,97 @@
-# 🎮 Video Game Library API
+#  Video Game Library API
 
-A RESTful API built with Node.js, Express, Lodash, and UUID that manages a collection of video games and gaming platforms.
-
-This project demonstrates CRUD operations, query parameter filtering, sorting, middleware usage, and API development fundamentals.
+A RESTful API built with **Node.js**, **Express**, and **Lodash** that allows users to manage a collection of video games and gaming platforms. This project demonstrates REST API design, Express routing, query parameters, reusable utility functions, and CRUD operations.
 
 ---
 
-## Features
+## 🚀 Features
 
 ### Games
 
-- Get all games
-- Get game by ID
-- Create new game
-- Update existing game
-- Delete game
-- Filter by platform
-- Filter by genre
-- Filter by release year
-- Sort by name or release year
+* Retrieve all games
+* Retrieve a game by ID
+* Create a new game
+* Update an existing game
+* Delete a game
+* Sort games by name or release year
+* Sort in ascending or descending order
 
 ### Platforms
 
-- Get all platforms
-- Get platform by ID
-- Sort platforms by name or release year
+* Retrieve all gaming platforms
+* Retrieve a platform by ID
+* Sort platforms by name or release year
+* Sort in ascending or descending order
 
 ---
 
-## Technologies Used
+# 🛠 Technologies Used
 
-- Node.js
-- Express.js
-- Lodash
-- UUID
-- Morgan
-- JavaScript
+* Node.js
+* Express.js
+* Lodash
+* Morgan
+* UUID
 
 ---
 
-## Installation
+# 📂 Project Structure
 
-Clone the repository:
-
-```bash
-git clone https://github.com/vros15/video-game-library-api.git
+```text
+video-game-library-api/
+│
+├── data/
+│   ├── games.js
+│   └── platforms.js
+│
+├── routes/
+│   ├── games-router.js
+│   └── platforms-router.js
+│
+├── index.js
+├── utils.js
+├── package.json
+└── README.md
 ```
 
-Navigate into the project:
+### Folder Overview
+
+| Folder/File  | Purpose                                                                       |
+| ------------ | ----------------------------------------------------------------------------- |
+| **index.js** | Creates the Express application, configures middleware, and registers routers |
+| **routes/**  | Contains all API endpoint logic                                               |
+| **data/**    | Stores local game and platform data                                           |
+| **utils.js** | Contains reusable helper functions (sorting)                                  |
+
+---
+
+# 📦 Installation
+
+Clone the repository
+
+```bash
+git clone https://github.com/yourusername/video-game-library-api.git
+```
+
+Navigate into the project
 
 ```bash
 cd video-game-library-api
 ```
 
-Install dependencies:
+Install dependencies
 
 ```bash
 npm install
 ```
 
-Start the server:
+Start the server
 
 ```bash
-node main.js
+node index.js
 ```
 
-Server will run on:
+The API will run at
 
 ```text
 http://localhost:3000
@@ -73,141 +99,108 @@ http://localhost:3000
 
 ---
 
-## API Routes
+# 📚 API Endpoints
 
-### Games
+## Games
 
-#### Get All Games
+| Method | Endpoint            | Description             |
+| ------ | ------------------- | ----------------------- |
+| GET    | `/api/v1/games`     | Retrieve all games      |
+| GET    | `/api/v1/games/:id` | Retrieve a game by ID   |
+| POST   | `/api/v1/games`     | Create a new game       |
+| PUT    | `/api/v1/games/:id` | Update an existing game |
+| DELETE | `/api/v1/games/:id` | Delete a game           |
+
+---
+
+## Platforms
+
+| Method | Endpoint                | Description               |
+| ------ | ----------------------- | ------------------------- |
+| GET    | `/api/v1/platforms`     | Retrieve all platforms    |
+| GET    | `/api/v1/platforms/:id` | Retrieve a platform by ID |
+
+---
+
+# 🔎 Sorting
+
+Games and platforms can be sorted using query parameters.
+
+## Sort by name
 
 ```http
-GET /api/games
+GET /api/v1/games?sortBy=name
 ```
 
-#### Get Game By ID
+## Sort by release year
 
 ```http
-GET /api/games/:id
+GET /api/v1/games?sortBy=releaseYear
 ```
 
-#### Create Game
+## Descending order
 
 ```http
-POST /api/games
+GET /api/v1/games?sortBy=releaseYear&order=desc
 ```
 
-Request Body:
+## Ascending order (default)
+
+```http
+GET /api/v1/games?sortBy=name&order=asc
+```
+
+---
+
+# 📥 Example POST Request
 
 ```json
 {
-  "name": "Game Title",
-  "releaseYear": 2025,
-  "genres": ["Action", "Adventure"],
-  "platforms": ["PC"]
+  "name": "Halo Infinite",
+  "genres": ["Shooter", "Action"],
+  "releaseYear": 2021,
+  "platforms": ["Xbox Series X", "PC"]
 }
 ```
 
-#### Update Game
+---
 
-```http
-PUT /api/games/:id
-```
+# 🧠 Concepts Demonstrated
 
-Request Body Example:
-
-```json
-{
-  "releaseYear": 2026
-}
-```
-
-#### Delete Game
-
-```http
-DELETE /api/games/:id
-```
+* RESTful API design
+* Express Routers
+* Middleware
+* CRUD operations
+* Route parameters
+* Query parameters
+* Array methods (`find`, `filter`, `sort`)
+* Reusable helper functions
+* Modular project architecture
+* HTTP status codes
+* UUID generation
+* JSON request handling
 
 ---
 
-## Filtering
+# 🔮 Future Improvements
 
-### Filter By Platform
-
-```http
-GET /api/games?platform=PC
-```
-
-### Filter By Genre
-
-```http
-GET /api/games?genre=RPG
-```
-
-### Filter By Release Year
-
-```http
-GET /api/games?year=2025
-```
+* Input validation
+* Error-handling middleware
+* Persistent database (MongoDB or PostgreSQL)
+* Search by game title
+* Filter by genre
+* Filter by platform
+* Pagination
+* Unit and integration tests
+* Swagger/OpenAPI documentation
+* Authentication and authorization
 
 ---
 
-## Sorting
+# 👨‍💻 Author
 
-### Sort By Name
+**Victor Rosario**
 
-```http
-GET /api/games?sortBy=name
-```
+Computer Science graduate and Software Engineering student passionate about backend development, REST APIs, and building scalable applications with JavaScript and Node.js.
 
-### Sort By Release Year
-
-```http
-GET /api/games?sortBy=releaseYear
-```
-
-### Descending Order
-
-```http
-GET /api/games?sortBy=releaseYear&order=desc
-```
-
----
-
-## Example Query
-
-```http
-GET /api/games?platform=PC&sortBy=releaseYear&order=desc
-```
-
-Returns all PC games sorted from newest to oldest.
-
----
-
-## Project Structure
-
-```text
-.
-├── data
-│   ├── games.js
-│   └── platforms.js
-│
-├── main.js
-├── package.json
-├── package-lock.json
-└── README.md
-```
-
----
-
-## Learning Objectives
-
-This project was created to practice:
-
-- REST API development
-- Express routing
-- CRUD operations
-- Query parameters
-- Filtering and sorting data
-- Working with JSON data
-- Middleware configuration
-- Error handling
-- Git and GitHub workflows
+Feel free to connect or provide feedback!
